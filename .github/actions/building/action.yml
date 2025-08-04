@@ -1,0 +1,50 @@
+name: "Build"
+description: "Executes a compilation."
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Update apt repositories
+      run: sudo apt-get update
+      shell: bash  # Asegúrate de que se usa bash
+
+    - name: Install system dependencies
+      run: sudo apt-get install -y libmicrohttpd-dev
+      shell: bash  # Asegúrate de que se usa bash
+
+    - name: Create virtual environment and Install Conan
+      run: |
+        python3 -m venv venv
+        . venv/bin/activate
+        pip install conan
+      shell: bash  # Asegúrate de que se usa bash
+
+    - name: Create default Conan profile
+      run: |
+        . venv/bin/activate
+        conan profile detect
+      shell: bash  # Asegúrate de que se usa bash
+
+    - name: Install dependencies
+      run: |
+        . venv/bin/activate
+        mkdir -p build && cd build
+        conan install .. --build=missing
+      shell: bash  # Asegúrate de que se usa bash
+
+    - name: Compile
+      run: |
+        . venv/bin/activate
+        cd build
+        echo "Running command: cmake -DRUN_COVERAGE=1 .. && make -j2"
+        cmake .. -DCMAKE_TOOLCHAIN_FILE=./build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DRUN_COVERAGE=1 -DENABLE_JSON_TEST=OFF
+        make -j2
+      shell: bash  # Asegúrate de que se usa bash

@@ -260,6 +260,7 @@ void check_heap(void *data){
     printf("Free: %d\n", block->free);
 
     if (block->ptr != NULL){
+        printf("Beginning\n");
         printf("Beginning data address: %p\n", block->ptr);
         printf("Last data address: %p\n", (void *)((char *)(block->ptr) + block->size));
     } else {
